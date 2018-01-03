@@ -202,8 +202,8 @@ except ImportError, e:
         </li>
         % endif
         <li>
-          <a class="download" href="javascript:void(0)" data-bind="click: function() { savePath(''); $('#saveResultsModal').modal('show'); }" title="${ _('Save the result in a file, a new table...') }">
-            <i class="fa fa-fw fa-save"></i> ${ _('Save') }
+          <a class="download" href="javascript:void(0)" data-bind="click: function() { savePath(''); $('#saveResultsModal').modal('show'); }" title="${ _('Export the result into a collection, a new table...') }">
+            <i class="fa fa-fw fa-cloud-upload"></i> ${ _('Export') }
           </a>
         </li>
       </ul>
@@ -217,17 +217,19 @@ except ImportError, e:
 
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="${ _('Close') }"><span aria-hidden="true">&times;</span></button>
-        <h2 class="modal-title">${_('Save query result in a')}</h2>
+        <h2 class="modal-title">${_('Export query result in a')}</h2>
       </div>
       <div class="modal-body" style="padding-left: 30px">
         <form id="saveResultsForm" method="POST" class="form form-inline">
           ${ csrf_token(request) | n,unicode }
           <fieldset>
+            % if ENABLE_SQL_INDEXER.get():
+            <div class="control-group">
             <div class="control-group">
               <div class="controls">
                  <label class="radio">
                   <input data-bind="checked: saveTarget" type="radio" name="save-results-type" value="hdfs-file">
-                  &nbsp;${ _('File (first %s rows)') % (hasattr(DOWNLOAD_ROW_LIMIT, 'get') and DOWNLOAD_ROW_LIMIT.get()) }
+                  &nbsp;${ _('File') }
                 </label>
                 <div data-bind="visible: saveTarget() == 'hdfs-file'" class="inline">
                   <input data-bind="value: savePath, valueUpdate:'afterkeydown', filechooser: { value: savePath, isNestedModal: true }, filechooserOptions: { uploadFile: false, skipInitialPathIfEmpty: true, linkMarkup: true }, hdfsAutocomplete: savePath" type="text" name="target_file" placeholder="${_('Path to CSV file')}" class="pathChooser margin-left-10">
@@ -236,8 +238,23 @@ except ImportError, e:
                   <input data-bind="checked: saveOverwrite" type="checkbox" name="overwrite">
                   ${ _('Overwrite') }
                 </label>
+                &nbsp;${ _('(first %s rows)') % (hasattr(DOWNLOAD_ROW_LIMIT, 'get') and DOWNLOAD_ROW_LIMIT.get()) }
               </div>
             </div>
+              <div class="controls">
+                <label class="radio">
+                  <input data-bind="checked: saveTarget" type="radio" name="save-results-type" value="search-index">
+                  &nbsp;${ _('Collection') }
+                </label>
+                <div data-bind="visible: saveTarget() == 'search-index'" class="inline">
+                  <input data-bind="value: savePath, valueUpdate:'afterkeydown'" type="text" name="target_index" class="input-xlarge margin-left-10" placeholder="${_('Index name')}">
+                </div>
+                <div class="inline-block" data-bind="visible: saveTarget() == 'search-index', tooltip: { title: '${ _ko("Save in an index and explore in a dashboard") }', placement: 'top' }" style="padding: 8px">
+                  <i class="fa fa-fw fa-question-circle muted"></i>
+                </div>
+              </div>
+            </div>
+            % endif
             <div class="control-group">
               <div class="controls">
                 <label class="radio">
@@ -247,7 +264,7 @@ except ImportError, e:
                 <div data-bind="visible: saveTarget() == 'hdfs-directory'" class="inline">
                   <input data-bind="value: savePath, valueUpdate:'afterkeydown', filechooser: { value: savePath, isNestedModal: true }, filechooserOptions: { uploadFile: false, skipInitialPathIfEmpty: true, displayOnlyFolders: true, linkMarkup: true }, hdfsAutocomplete: savePath" type="text" name="target_dir" placeholder="${_('Path to empty directory')}" class="pathChooser margin-left-10 input-xlarge">
                 </div>
-                <div class="inline-block" data-bind="visible: saveTarget() == 'hdfs-directory', tooltip: { title: '${ _ko("Save a large result as TSV") }', placement: 'top' }" style="padding: 8px">
+                <div class="inline-block" data-bind="visible: saveTarget() == 'hdfs-directory', tooltip: { title: '${ _ko("Save the complete result as TSV") }', placement: 'top' }" style="padding: 8px">
                   <i class="fa fa-fw fa-question-circle muted"></i>
                 </div>
               </div>
@@ -263,19 +280,6 @@ except ImportError, e:
                 </div>
               </div>
             </div>
-            % if ENABLE_SQL_INDEXER.get():
-            <div class="control-group">
-              <div class="controls">
-                <label class="radio">
-                  <input data-bind="checked: saveTarget" type="radio" name="save-results-type" value="search-index">
-                  &nbsp;${ _('Index') }
-                </label>
-                <div data-bind="visible: saveTarget() == 'search-index'" class="inline">
-                  <input data-bind="value: savePath, valueUpdate:'afterkeydown'" type="text" name="target_index" class="input-xlarge margin-left-10" placeholder="${_('Index name')}">
-                </div>
-              </div>
-            </div>
-            % endif
           </fieldset>
         </form>
       </div>
