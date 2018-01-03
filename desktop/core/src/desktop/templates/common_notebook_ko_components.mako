@@ -217,14 +217,12 @@ except ImportError, e:
 
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="${ _('Close') }"><span aria-hidden="true">&times;</span></button>
-        <h2 class="modal-title">${_('Export query result in a')}</h2>
+        <h2 class="modal-title">${_('Export the query result in a')}</h2>
       </div>
       <div class="modal-body" style="padding-left: 30px">
         <form id="saveResultsForm" method="POST" class="form form-inline">
           ${ csrf_token(request) | n,unicode }
           <fieldset>
-            % if ENABLE_SQL_INDEXER.get():
-            <div class="control-group">
             <div class="control-group">
               <div class="controls">
                  <label class="radio">
@@ -238,18 +236,22 @@ except ImportError, e:
                   <input data-bind="checked: saveOverwrite" type="checkbox" name="overwrite">
                   ${ _('Overwrite') }
                 </label>
-                &nbsp;${ _('(first %s rows)') % (hasattr(DOWNLOAD_ROW_LIMIT, 'get') and DOWNLOAD_ROW_LIMIT.get()) }
+                <span data-bind="visible: saveTarget() == 'hdfs-file'">
+                  ${ _('(first %s rows)') % (hasattr(DOWNLOAD_ROW_LIMIT, 'get') and DOWNLOAD_ROW_LIMIT.get()) }
+                </span>
               </div>
             </div>
+            % if ENABLE_SQL_INDEXER.get():
+            <div class="control-group">
               <div class="controls">
                 <label class="radio">
                   <input data-bind="checked: saveTarget" type="radio" name="save-results-type" value="search-index">
                   &nbsp;${ _('Collection') }
                 </label>
                 <div data-bind="visible: saveTarget() == 'search-index'" class="inline">
-                  <input data-bind="value: savePath, valueUpdate:'afterkeydown'" type="text" name="target_index" class="input-xlarge margin-left-10" placeholder="${_('Index name')}">
+                  <input data-bind="value: savePath, valueUpdate:'afterkeydown'" type="text" name="target_index" class="input-xlarge margin-left-10" placeholder="${_('Collection name')}">
                 </div>
-                <div class="inline-block" data-bind="visible: saveTarget() == 'search-index', tooltip: { title: '${ _ko("Save in an index and explore in a dashboard") }', placement: 'top' }" style="padding: 8px">
+                <div class="inline-block" data-bind="visible: saveTarget() == 'search-index', tooltip: { title: '${ _ko("Index the data and explore in a dynamic dashboard") }', placement: 'top' }" style="padding: 8px">
                   <i class="fa fa-fw fa-question-circle muted"></i>
                 </div>
               </div>
@@ -285,7 +287,7 @@ except ImportError, e:
       </div>
       <div class="modal-footer">
         <button class="btn" data-dismiss="modal">${_('Cancel')}</button>
-        <button data-bind="click: trySaveResults, css: {'disabled': !isValidDestination()}" class="btn btn-primary disable-enter disable-feedback">${_('Save')}</button>
+        <button data-bind="click: trySaveResults, css: {'disabled': !isValidDestination()}" class="btn btn-primary disable-enter disable-feedback">${_('Export')}</button>
       </div>
     </div>
 
